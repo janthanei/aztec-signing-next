@@ -19,6 +19,7 @@ contract DocumentSigning {
         //list with signers (in bytestream) and their respective hasSigned t/f
         //problem: bool is not nullable, so we have to use Field with 0(doesnt exist),1(not signed),2(signed)
         signers: Map<Field, PublicMutable<Field, Context>, Context>,
+        signers_list: PublicMutable<Vec<Field>, Context>,
         signingEnded: PublicMutable<bool, Context>,
         active_at_block: SharedImmutable<u32, Context>, // when people can start signing
     }
@@ -66,6 +67,10 @@ contract DocumentSigning {
         let signer_serialized = signer_s.serialize()[0];
         assert(storage.signers.at(signer_serialized).read() == 0, "Given signer already exists");
         storage.signers.at(signer_serialized).write(1);
+
+        let mut current_list = storage.signers_list.read();
+        current_list.push(signer_serialized);
+        storage.signers_list.write(current_list);
     }
 
     #[public]
@@ -83,5 +88,17 @@ contract DocumentSigning {
     fn end_sign() {
         assert(storage.admin.read().eq(context.msg_sender()), "Only admin can end signing"); // assert that caller is admin
         storage.signingEnded.write(true);
+    }
+
+    #[public]
+    #[view]
+    fn get_signer_status(signer: Field) -> Field {
+        storage.signers.at(signer).read()
+    }
+
+    #[public]
+    #[view]
+    fn get_all_signers() -> Vec<Field> {
+        storage.signers_list.read()
     }
 }
