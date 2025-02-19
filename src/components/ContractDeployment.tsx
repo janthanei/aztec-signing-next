@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { Button, Input, Progress, Card, CardBody, Spinner, Tooltip } from '@nextui-org/react'
 import * as CryptoJS from 'crypto-js'
 import { Plus, Trash2 } from 'lucide-react'
+import { ErrorModal } from './modals/ErrorModal'
 
 declare global {
   interface Window {
@@ -43,6 +44,8 @@ const ContractDeployment: React.FC = () => {
   const [isAddingSignature, setIsAddingSignature] = useState(false)
   const [signatureAdded, setSignatureAdded] = useState(false)
   const [signatureStatus, setSignatureStatus] = useState<string | null>(null)
+  const [isErrorModalOpen, setIsErrorModalOpen] = useState(false)
+  const [modalMessage, setModalMessage] = useState('')
 
   useEffect(() => {
     setProgress((currentStep - 1) * 25) // Adjusted for 5 steps
@@ -100,11 +103,11 @@ const ContractDeployment: React.FC = () => {
 
   const deployContract = async () => {
     if (!hashString) {
-      alert("Please upload a PDF first.");
-      return;
+      showErrorModal("Please upload a PDF first.")
+      return
     }
-    setIsDeploying(true);
-    setDeploymentStatus("Deploying contract...");
+    setIsDeploying(true)
+    setDeploymentStatus("Deploying contract...")
     try {
       console.log("Attempting to deploy contract with hashString:", hashString);
       const response = await fetch("http://localhost:9000/deploy-contract", {
@@ -129,10 +132,10 @@ const ContractDeployment: React.FC = () => {
       }
     } catch (error) {
       console.error("Error deploying contract:", error);
-      setDeploymentStatus("Error deploying contract: " + (error instanceof Error ? error.message : String(error)));
-      setIsDeploymentSuccessful(false);
+      showErrorModal("Error deploying contract: " + (error instanceof Error ? error.message : String(error)))
+      setIsDeploymentSuccessful(false)
     } finally {
-      setIsDeploying(false);
+      setIsDeploying(false)
     }
   };
 
@@ -207,6 +210,7 @@ const ContractDeployment: React.FC = () => {
       console.error('Error adding signature:', err)
       setSignatureStatus("Failed to add signature");
       setSignatureAdded(false);
+      showErrorModal(`Failed to add signature: ${err instanceof Error ? err.message : String(err)}`);
     } finally {
       setIsAddingSignature(false);
     }
@@ -243,261 +247,27 @@ const ContractDeployment: React.FC = () => {
     }
   }
 
+  const showErrorModal = (message: string) => {
+    setModalMessage(message)
+    setIsErrorModalOpen(true)
+  }
+
   return (
-    <Card className="w-full max-w-md bg-white/10 border-2 border-white/20">
-      <CardBody>
-        <Progress color="success" value={progress} className="mb-4" />
-        {currentStep === 1 && (
-          <>
-            <Button 
-              onClick={connectWallet} 
-              disabled={!!currentAccount}
-              className="bg-white/20 hover:bg-white/30 transition-all duration-200"
-            >
-              {currentAccount ? 'Wallet Connected' : 'Connect Wallet'}
-            </Button>
-            {currentAccount && (
-              <div className="flex items-center gap-2 mt-2">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5 text-green-500"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                <p>
-                  Connected account: {currentAccount.slice(0, 5)}...{currentAccount.slice(-5)}
-                </p>
-              </div>
-            )}
-          </>
-        )}
-        {currentStep === 2 && (
-          <>
-            <div className="mb-4">
-              <Input
-                type="file"
-                onChange={handlePdfInput}
-                accept=".pdf,application/pdf"
-                classNames={{
-                  input: [
-                    "file:bg-white/20",
-                    "file:border-0",
-                    "file:hover:bg-white/30",
-                    "file:text-black",
-                    "file:rounded-lg",
-                    "file:px-4",
-                    "file:py-2",
-                    "file:mr-4",
-                    "file:transition-all",
-                    "file:duration-200",
-                    "text-black",
-                    "bg-transparent",
-                    "rounded-lg",
-                    "cursor-pointer",
-                    "border-white/20"
-                  ].join(" "),
-                  base: "max-w-full",
-                  mainWrapper: "bg-transparent",
-                  innerWrapper: "bg-transparent",
-                  inputWrapper: [
-                    "bg-transparent",
-                    "border-1",
-                    "border-white/20",
-                    "hover:bg-white/10",
-                    "hover:border-white/30",
-                    "transition-all",
-                    "duration-200",
-                    "!cursor-pointer"
-                  ].join(" ")
-                }}
-                placeholder="Select PDF file"
-              />
-            </div>
-            <div className="flex flex-col items-center gap-4">
-              {!selectedFile ? (
-                <Tooltip
-                  content="Please upload a PDF first"
-                  showArrow={true}
-                  placement="bottom"
-                  classNames={{
-                    base: [
-                      "bg-white/10",
-                      "backdrop-blur-sm",
-                      "border-white/20",
-                      "border",
-                    ].join(" "),
-                    content: [
-                      "text-black",
-                      "text-sm",
-                      "py-2",
-                      "px-4",
-                    ].join(" "),
-                    arrow: "bg-white/10"
-                  }}
-                >
-                  <div>
-                    <Button 
-                      onClick={deployContract} 
-                      disabled={true}
-                      className="bg-white/20 hover:bg-white/30 transition-all duration-200"
-                    >
-                      Deploy Contract
-                    </Button>
-                  </div>
-                </Tooltip>
-              ) : (
-                <Button 
-                  onClick={deployContract} 
-                  disabled={isDeploying}
-                  className="bg-white/20 hover:bg-white/30 transition-all duration-200"
-                >
-                  Deploy Contract
-                </Button>
-              )}
-              {isDeploying && (
-                <Spinner 
-                  color="success" 
-                  label="Deploying contract..." 
-                  labelColor="success"
-                />
-              )}
-              {deploymentStatus && !isDeploying && (
-                <div className="flex items-center gap-2">
-                  {isDeploymentSuccessful && (
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5 text-green-500"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  )}
-                  <p className="text-center">{deploymentStatus}</p>
-                </div>
-              )}
-            </div>
-          </>
-        )}
-        {currentStep === 3 && (
-          <div className="flex flex-col gap-4">
-            <h2 className="text-xl font-semibold mb-2">Add Signers</h2>
-            
-            <div className="flex flex-col gap-3">
-              {signers.map((signer, index) => (
-                <div key={index} className="flex gap-2">
-                  <Input
-                    value={signer}
-                    onChange={(e) => updateSigner(index, e.target.value)}
-                    placeholder={`Signer address ${index + 1}`}
-                    classNames={{
-                      input: "text-white",
-                      base: "flex-1",
-                      mainWrapper: "bg-transparent",
-                      innerWrapper: "bg-transparent",
-                      inputWrapper: [
-                        "bg-white/10",
-                        "border-1",
-                        "border-white/20",
-                        "hover:bg-white/20",
-                        "hover:border-white/30",
-                        "transition-all",
-                        "duration-200"
-                      ].join(" ")
-                    }}
-                  />
-                  {index > 0 && (
-                    <Button 
-                      onClick={() => removeSigner(index)} 
-                      isIconOnly
-                      className="bg-white/20 hover:bg-red-500/50 transition-all duration-200 h-full aspect-square"
-                    >
-                      <Trash2 className="h-5 w-5" />
-                    </Button>
-                  )}
-                </div>
-              ))}
-            </div>
-
-            <div className="flex flex-col items-center gap-4">
-              <div className="flex gap-2">
-                <Button 
-                  onClick={addSigner} 
-                  className="bg-green-500/20 hover:bg-green-500/40 transition-all duration-200 flex items-center gap-2"
-                >
-                  <Plus className="h-5 w-5" />
-                  Add Signer
-                </Button>
-                <Button 
-                  onClick={submitSigners}
-                  disabled={signers.some(signer => !signer.trim()) || isSubmittingSigners}
-                  className="bg-white/20 hover:bg-white/30 transition-all duration-200"
-                >
-                  Submit Signers
-                </Button>
-              </div>
-
-              {isSubmittingSigners && (
-                <Spinner 
-                  color="success" 
-                  label="Submitting signers..." 
-                  labelColor="success"
-                />
-              )}
-              
-              {submissionStatus && !isSubmittingSigners && (
-                <div className="flex items-center gap-2">
-                  {signersSubmitted && (
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5 text-green-500"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  )}
-                  <p className="text-center">{submissionStatus}</p>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-        {currentStep === 4 && (
-          <div className="flex flex-col items-center gap-4">
-            <Button 
-              onClick={addSignature}
-              disabled={isAddingSignature}
-              className="bg-white/20 hover:bg-white/30 transition-all duration-200"
-            >
-              Add Signature
-            </Button>
-
-            {isAddingSignature && (
-              <Spinner 
-                color="success" 
-                label="Adding signature..." 
-                labelColor="success"
-              />
-            )}
-            
-            {signatureStatus && !isAddingSignature && (
-              <div className="flex items-center gap-2">
-                {signatureAdded && (
+    <>
+      <Card className="w-full max-w-md bg-white/10 border-2 border-white/20">
+        <CardBody>
+          <Progress color="success" value={progress} className="mb-4" />
+          {currentStep === 1 && (
+            <>
+              <Button 
+                onClick={connectWallet} 
+                disabled={!!currentAccount}
+                className="bg-white/20 hover:bg-white/30 transition-all duration-200"
+              >
+                {currentAccount ? 'Wallet Connected' : 'Connect Wallet'}
+              </Button>
+              {currentAccount && (
+                <div className="flex items-center gap-2 mt-2">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-5 w-5 text-green-500"
@@ -510,37 +280,284 @@ const ContractDeployment: React.FC = () => {
                       clipRule="evenodd"
                     />
                   </svg>
-                )}
-                <p className="text-center">{signatureStatus}</p>
+                  <p>
+                    Connected account: {currentAccount.slice(0, 5)}...{currentAccount.slice(-5)}
+                  </p>
+                </div>
+              )}
+            </>
+          )}
+          {currentStep === 2 && (
+            <>
+              <div className="mb-4">
+                <Input
+                  type="file"
+                  onChange={handlePdfInput}
+                  accept=".pdf,application/pdf"
+                  classNames={{
+                    input: [
+                      "file:bg-white/20",
+                      "file:border-0",
+                      "file:hover:bg-white/30",
+                      "file:text-black",
+                      "file:rounded-lg",
+                      "file:px-4",
+                      "file:py-2",
+                      "file:mr-4",
+                      "file:transition-all",
+                      "file:duration-200",
+                      "text-black",
+                      "bg-transparent",
+                      "rounded-lg",
+                      "cursor-pointer",
+                      "border-white/20"
+                    ].join(" "),
+                    base: "max-w-full",
+                    mainWrapper: "bg-transparent",
+                    innerWrapper: "bg-transparent",
+                    inputWrapper: [
+                      "bg-transparent",
+                      "border-1",
+                      "border-white/20",
+                      "hover:bg-white/10",
+                      "hover:border-white/30",
+                      "transition-all",
+                      "duration-200",
+                      "!cursor-pointer"
+                    ].join(" ")
+                  }}
+                  placeholder="Select PDF file"
+                />
               </div>
-            )}
-          </div>
-        )}
-        {currentStep === 5 && (
-          <Button onClick={endSign}>
-            End Sign
-          </Button>
-        )}
-        <div className={`flex ${currentStep === 1 ? 'justify-end' : 'justify-between'} mt-4`}>
-          {currentStep !== 1 && (
-            <Button 
-              onClick={prevStep} 
-              disabled={currentStep === 1}
-              className="bg-white/20 hover:bg-white/30 transition-all duration-200"
-            >
-              Prev
+              <div className="flex flex-col items-center gap-4">
+                {!selectedFile ? (
+                  <Tooltip
+                    content="Please upload a PDF first"
+                    showArrow={true}
+                    placement="bottom"
+                    classNames={{
+                      base: [
+                        "bg-white/10",
+                        "backdrop-blur-sm",
+                        "border-white/20",
+                        "border",
+                      ].join(" "),
+                      content: [
+                        "text-black",
+                        "text-sm",
+                        "py-2",
+                        "px-4",
+                      ].join(" "),
+                      arrow: "bg-white/10"
+                    }}
+                  >
+                    <div>
+                      <Button 
+                        onClick={deployContract} 
+                        disabled={true}
+                        className="bg-white/20 hover:bg-white/30 transition-all duration-200"
+                      >
+                        Deploy Contract
+                      </Button>
+                    </div>
+                  </Tooltip>
+                ) : (
+                  <Button 
+                    onClick={deployContract} 
+                    disabled={isDeploying}
+                    className="bg-white/20 hover:bg-white/30 transition-all duration-200"
+                  >
+                    Deploy Contract
+                  </Button>
+                )}
+                {isDeploying && (
+                  <Spinner 
+                    color="success" 
+                    label="Deploying contract..." 
+                    labelColor="success"
+                  />
+                )}
+                {deploymentStatus && !isDeploying && (
+                  <div className="flex items-center gap-2">
+                    {isDeploymentSuccessful && (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5 text-green-500"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    )}
+                    <p className="text-center">{deploymentStatus}</p>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+          {currentStep === 3 && (
+            <div className="flex flex-col gap-4">
+              <h2 className="text-xl font-semibold mb-2">Add Signers</h2>
+              
+              <div className="flex flex-col gap-3">
+                {signers.map((signer, index) => (
+                  <div key={index} className="flex gap-2">
+                    <Input
+                      value={signer}
+                      onChange={(e) => updateSigner(index, e.target.value)}
+                      placeholder={`Signer address ${index + 1}`}
+                      classNames={{
+                        input: "text-white",
+                        base: "flex-1",
+                        mainWrapper: "bg-transparent",
+                        innerWrapper: "bg-transparent",
+                        inputWrapper: [
+                          "bg-white/10",
+                          "border-1",
+                          "border-white/20",
+                          "hover:bg-white/20",
+                          "hover:border-white/30",
+                          "transition-all",
+                          "duration-200"
+                        ].join(" ")
+                      }}
+                    />
+                    {index > 0 && (
+                      <Button 
+                        onClick={() => removeSigner(index)} 
+                        isIconOnly
+                        className="bg-white/20 hover:bg-red-500/50 transition-all duration-200 h-full aspect-square"
+                      >
+                        <Trash2 className="h-5 w-5" />
+                      </Button>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex flex-col items-center gap-4">
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={addSigner} 
+                    className="bg-green-500/20 hover:bg-green-500/40 transition-all duration-200 flex items-center gap-2"
+                  >
+                    <Plus className="h-5 w-5" />
+                    Add Signer
+                  </Button>
+                  <Button 
+                    onClick={submitSigners}
+                    disabled={signers.some(signer => !signer.trim()) || isSubmittingSigners}
+                    className="bg-white/20 hover:bg-white/30 transition-all duration-200"
+                  >
+                    Submit Signers
+                  </Button>
+                </div>
+
+                {isSubmittingSigners && (
+                  <Spinner 
+                    color="success" 
+                    label="Submitting signers..." 
+                    labelColor="success"
+                  />
+                )}
+                
+                {submissionStatus && !isSubmittingSigners && (
+                  <div className="flex items-center gap-2">
+                    {signersSubmitted && (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5 text-green-500"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    )}
+                    <p className="text-center">{submissionStatus}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+          {currentStep === 4 && (
+            <div className="flex flex-col items-center gap-4">
+              <Button 
+                onClick={addSignature}
+                disabled={isAddingSignature}
+                className="bg-white/20 hover:bg-white/30 transition-all duration-200"
+              >
+                Add Signature
+              </Button>
+
+              {isAddingSignature && (
+                <Spinner 
+                  color="success" 
+                  label="Adding signature..." 
+                  labelColor="success"
+                />
+              )}
+              
+              {signatureStatus && !isAddingSignature && (
+                <div className="flex items-center gap-2">
+                  {signatureAdded && (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5 text-green-500"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  )}
+                  <p className="text-center">{signatureStatus}</p>
+                </div>
+              )}
+            </div>
+          )}
+          {currentStep === 5 && (
+            <Button onClick={endSign}>
+              End Sign
             </Button>
           )}
-          <Button 
-            onClick={nextStep} 
-            disabled={currentStep === 5 || (currentStep === 2 && !isDeploymentSuccessful)}
-            className="bg-white/20 hover:bg-white/30 transition-all duration-200"
-          >
-            Next
-          </Button>
-        </div>
-      </CardBody>
-    </Card>
+          <div className={`flex ${currentStep === 1 ? 'justify-end' : 'justify-between'} mt-4`}>
+            {currentStep !== 1 && (
+              <Button 
+                onClick={prevStep} 
+                disabled={currentStep === 1}
+                className="bg-white/20 hover:bg-white/30 transition-all duration-200"
+              >
+                Prev
+              </Button>
+            )}
+            <Button 
+              onClick={nextStep} 
+              disabled={currentStep === 5 || (currentStep === 2 && !isDeploymentSuccessful)}
+              className="bg-white/20 hover:bg-white/30 transition-all duration-200"
+            >
+              Next
+            </Button>
+          </div>
+        </CardBody>
+      </Card>
+
+      <ErrorModal 
+        isOpen={isErrorModalOpen}
+        onClose={() => setIsErrorModalOpen(false)}
+        message={modalMessage}
+      />
+    </>
   )
 }
 

@@ -91,7 +91,7 @@ app.post('/add-signer', async (req, res) => {
     const contract = await Contract.at(token.address, TokenContractArtifact, ownerWallet);
     console.log('contract: ', contract);
     const { signer } = req.body;
-    const _tx = await contract.methods.add_signer_final(signer).send().wait();
+    const _tx = await contract.methods.add_signer_final(signer.toLowerCase()).send().wait();
     
     res.status(200).json({ success: true, message: 'Signer added successfully' });
   } catch (err) {
