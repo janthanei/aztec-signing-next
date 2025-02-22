@@ -37,6 +37,20 @@ You'll know the sandbox is ready when you see a message like:
 [INFO] Aztec Server listening on port 8080
 ```
 
+## :label: Version Compatibility
+
+**Important:** The **aztec-signing** package has been optimized for version **v0.57.0**. This is the last working version for this package; other versions of the sandbox do not guarantee that the app will work correctly.  
+To specify the version, run:
+```bash
+VERSION=0.57.0 aztec-up
+```
+
+After running the above command, verify that your Docker images are running the correct version. To do this, run:
+```bash
+docker images
+```
+Ensure that the Aztec sandbox image(s) are tagged with **v0.57.0**. If they do not match, consider reinstalling or updating the Docker images.
+
 ## :rocket: Next Steps
 
 After installing the sandbox, follow these steps:
