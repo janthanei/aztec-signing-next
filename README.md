@@ -1,36 +1,73 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# aztec-signing
 
-## Getting Started
+This guide walks you through setting up **aztec-signing**, covering installation of prerequisites, the Aztec Sandbox, and project components for both backend and frontend. Follow the steps below to get started.
 
-First, run the development server:
+## :package: Fetch the Repository
 
+Clone the repository:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone [repository URL]
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## :gear: Prerequisites
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### :computer: Node.js
+- **Version:** >= v18.xx.x and <= v20.17.x (lts/iron). Note that later versions (e.g. v22.9) may cause errors around 'assert'.
+- **Recommendation:** Install using [nvm](https://github.com/nvm-sh/nvm).
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### :whale: Docker
+- **Installation:** Follow the instructions on the [Docker Docs](https://docs.docker.com/get-docker/) page.
+- **Starting Docker:** Ensure Docker is running (open the Docker Desktop application) before proceeding with the sandbox installation.
 
-## Learn More
+## :construction_worker: Install the Sandbox
 
-To learn more about Next.js, take a look at the following resources:
+Run the following command in your terminal:
+```bash
+bash -i <(curl -s https://install.aztec.network)
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+During installation, you will see logs indicating:
+- Sandbox version
+- Contract addresses of rollup contracts
+- PXE (private execution environment) setup logs
+- Initial accounts shipped with the sandbox for testing
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+You'll know the sandbox is ready when you see a message like:
+```
+[INFO] Aztec Server listening on port 8080
+```
 
-## Deploy on Vercel
+## :rocket: Next Steps
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+After installing the sandbox, follow these steps:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. **Start the Sandbox:**  
+   ```bash
+   aztec start --sandbox
+   ```
+2. **Compile the Noir Contract:**  
+   Navigate to the `nor contract/signing` directory and run:
+   ```bash
+   aztec-nargo compile
+   ```
+3. **Start the Backend:**  
+   ```bash
+   node backend/deploy.mjs
+   ```
+4. **Start the Frontend:**  
+   ```bash
+   npm run dev
+   ```
+5. **Install Project Dependencies:**  
+   In the project root directory, run:
+   ```bash
+   npm install
+   ```
+
+The services should now be accessible at:
+- **Sandbox:** [http://localhost:8080](http://localhost:8080)
+- **Backend/Frontend:** As configured (e.g., [http://localhost:9000](http://localhost:9000) if applicable)
+
+---
+
+By following these instructions, you'll have the **aztec-signing** project and its sandbox environment up and running.
