@@ -2,11 +2,13 @@
   "name": "aztec-signing-next",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "server": "node backend/server.js"
+    "server": "node backend/server.js",
+    "deploy-contract": "node backend/contractDeployment.js"
   },
   "dependencies": {
     "@aztec/accounts": "^0.57.0",
