@@ -9,7 +9,7 @@ import { deriveSigningKey } from '@aztec/circuits.js';
 import { promises as fs } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
-import TokenContractJson from '../contracts/signing/target/document_signing-DocumentSigning.json' assert { type: 'json' };
+import TokenContractJson from '../signing-contract/target/document_signing-DocumentSigning.json' assert { type: 'json' };
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
