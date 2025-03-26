@@ -1,7 +1,8 @@
 'use client'
 
 import React from 'react'
-import { Button, Spinner } from '@nextui-org/react'
+import { Button, Spinner, Card, CardBody } from '@nextui-org/react'
+import { PenTool, CheckCircle, AlertTriangle } from 'lucide-react'
 
 interface SignatureStepProps {
   addSignature: () => Promise<void>;
@@ -17,41 +18,48 @@ const SignatureStep: React.FC<SignatureStepProps> = ({
   signatureAdded
 }) => {
   return (
-    <div className="flex flex-col items-center gap-4">
-      <Button 
-        onClick={addSignature}
-        disabled={isAddingSignature}
-        className="bg-white/20 hover:bg-white/30 transition-all duration-200"
-      >
-        Add Signature
-      </Button>
-
-      {isAddingSignature && (
-        <Spinner 
-          color="success" 
-          label="Adding signature..." 
-          labelColor="success"
-        />
-      )}
+    <div className="flex flex-col items-center gap-6 w-full max-w-xl">
+      <Card className="w-full border border-default-200">
+        <CardBody className="p-6 flex flex-col items-center gap-4">
+          <div className="p-4 rounded-full bg-primary/10 mb-2">
+            <PenTool size={40} className="text-primary" />
+          </div>
+          
+          <div className="text-center">
+            <h3 className="text-lg font-medium mb-2">Sign Document</h3>
+            <p className="text-default-500 text-sm mb-6">
+              Add your signature to the document to verify your approval. This action 
+              cannot be reversed.
+            </p>
+          </div>
+          
+          <Button 
+            onClick={addSignature}
+            isDisabled={isAddingSignature || signatureAdded}
+            isLoading={isAddingSignature}
+            color="primary"
+            variant="shadow"
+            size="lg"
+            className="min-w-[200px]"
+          >
+            {signatureAdded ? 'Signature Added' : isAddingSignature ? 'Adding Signature...' : 'Sign Document'}
+          </Button>
+        </CardBody>
+      </Card>
       
       {signatureStatus && !isAddingSignature && (
-        <div className="flex items-center gap-2">
-          {signatureAdded && (
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 text-green-500"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
-              <path
-                fillRule="evenodd"
-                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                clipRule="evenodd"
-              />
-            </svg>
-          )}
-          <p className="text-center">{signatureStatus}</p>
-        </div>
+        <Card className={`w-full border ${signatureAdded ? 'border-success/30 bg-success/5' : 'border-danger/30 bg-danger/5'}`}>
+          <CardBody className="flex items-center gap-2 py-3">
+            {signatureAdded ? (
+              <CheckCircle size={18} className="text-success flex-shrink-0" />
+            ) : (
+              <AlertTriangle size={18} className="text-danger flex-shrink-0" />
+            )}
+            <p className={`text-sm ${signatureAdded ? 'text-success' : 'text-danger'}`}>
+              {signatureStatus}
+            </p>
+          </CardBody>
+        </Card>
       )}
     </div>
   )

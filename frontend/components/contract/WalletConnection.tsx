@@ -1,7 +1,8 @@
 'use client'
 
 import React from 'react'
-import { Button } from '@nextui-org/react'
+import { Button, Card, CardBody, Chip } from '@nextui-org/react'
+import { Wallet, CheckCircle } from 'lucide-react'
 
 interface WalletConnectionProps {
   currentAccount: string | null;
@@ -13,34 +14,43 @@ const WalletConnection: React.FC<WalletConnectionProps> = ({
   onConnect 
 }) => {
   return (
-    <>
-      <Button 
-        onClick={onConnect} 
-        disabled={!!currentAccount}
-        className="bg-white/20 hover:bg-white/30 transition-all duration-200"
-      >
-        {currentAccount ? 'Wallet Connected' : 'Connect Wallet'}
-      </Button>
-      {currentAccount && (
-        <div className="flex items-center gap-2 mt-2">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5 text-green-500"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-          >
-            <path
-              fillRule="evenodd"
-              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-              clipRule="evenodd"
-            />
-          </svg>
-          <p>
-            Connected account: {currentAccount.slice(0, 5)}...{currentAccount.slice(-5)}
-          </p>
-        </div>
+    <div className="flex flex-col items-center w-full max-w-md gap-4">
+      {!currentAccount ? (
+        <Card className="w-full border border-default-200">
+          <CardBody className="flex justify-center p-6">
+            <Button 
+              onClick={onConnect} 
+              color="primary"
+              size="lg"
+              variant="shadow"
+              startContent={<Wallet size={20} />}
+              className="font-medium"
+            >
+              Connect Wallet
+            </Button>
+          </CardBody>
+        </Card>
+      ) : (
+        <Card className="w-full border border-success/30 bg-success/5">
+          <CardBody className="flex flex-col items-center gap-4 p-6">
+            <CheckCircle size={40} className="text-success" />
+            <div className="text-center">
+              <h3 className="text-lg font-medium text-success mb-1">Wallet Connected</h3>
+              <Chip
+                variant="flat"
+                color="success"
+                classNames={{
+                  base: "border-success/30",
+                  content: "text-success text-sm"
+                }}
+              >
+                {currentAccount.slice(0, 6)}...{currentAccount.slice(-4)}
+              </Chip>
+            </div>
+          </CardBody>
+        </Card>
       )}
-    </>
+    </div>
   )
 }
 

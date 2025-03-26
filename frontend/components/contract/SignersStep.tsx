@@ -1,8 +1,8 @@
 'use client'
 
 import React from 'react'
-import { Button, Input, Spinner } from '@nextui-org/react'
-import { Plus, Trash2 } from 'lucide-react'
+import { Button, Input, Spinner, Card, CardBody, Tooltip, Chip } from '@nextui-org/react'
+import { Plus, Trash2, UserPlus, CheckCircle, AlertTriangle } from 'lucide-react'
 
 interface SignersStepProps {
   signers: string[];
@@ -26,89 +26,85 @@ const SignersStep: React.FC<SignersStepProps> = ({
   signersSubmitted
 }) => {
   return (
-    <div className="flex flex-col gap-4">
-      <h2 className="text-xl font-semibold mb-2">Add Signers</h2>
-      
-      <div className="flex flex-col gap-3">
-        {signers.map((signer, index) => (
-          <div key={index} className="flex gap-2">
-            <Input
-              value={signer}
-              onChange={(e) => updateSigner(index, e.target.value)}
-              placeholder={`Signer address ${index + 1}`}
-              classNames={{
-                input: "text-white",
-                base: "flex-1",
-                mainWrapper: "bg-transparent",
-                innerWrapper: "bg-transparent",
-                inputWrapper: [
-                  "bg-white/10",
-                  "border-1",
-                  "border-white/20",
-                  "hover:bg-white/20",
-                  "hover:border-white/30",
-                  "transition-all",
-                  "duration-200"
-                ].join(" ")
-              }}
-            />
-            {index > 0 && (
-              <Button 
-                onClick={() => removeSigner(index)} 
-                isIconOnly
-                className="bg-white/20 hover:bg-red-500/50 transition-all duration-200 h-full aspect-square"
-              >
-                <Trash2 className="h-5 w-5" />
-              </Button>
-            )}
-          </div>
-        ))}
+    <div className="flex flex-col gap-6 w-full max-w-xl mx-auto">
+      <div className="flex items-center gap-2 mb-2">
+        <h2 className="text-xl font-semibold">Add Document Signers</h2>
+        <Chip color="primary" variant="flat" size="sm">
+          {signers.length} {signers.length === 1 ? 'signer' : 'signers'}
+        </Chip>
       </div>
+      
+      <Card className="border border-default-200">
+        <CardBody className="p-4 gap-4">
+          {signers.map((signer, index) => (
+            <div key={index} className="flex gap-2">
+              <Input
+                value={signer}
+                onChange={(e) => updateSigner(index, e.target.value)}
+                placeholder={`Signer address ${index + 1}`}
+                variant="bordered"
+                color="primary"
+                startContent={
+                  <div className="pointer-events-none flex items-center">
+                    <span className="text-default-400 text-small">{index + 1}.</span>
+                  </div>
+                }
+                className="flex-1"
+              />
+              {index > 0 && (
+                <Button 
+                  onClick={() => removeSigner(index)} 
+                  isIconOnly
+                  color="danger"
+                  variant="light"
+                  className="h-full aspect-square"
+                >
+                  <Trash2 size={18} />
+                </Button>
+              )}
+            </div>
+          ))}
+          
+          <div className="flex justify-center mt-2">
+            <Button 
+              onClick={addSigner} 
+              color="success"
+              variant="flat"
+              startContent={<UserPlus size={18} />}
+              className="mt-2"
+            >
+              Add Another Signer
+            </Button>
+          </div>
+        </CardBody>
+      </Card>
 
       <div className="flex flex-col items-center gap-4">
-        <div className="flex gap-2">
-          <Button 
-            onClick={addSigner} 
-            className="bg-green-500/20 hover:bg-green-500/40 transition-all duration-200 flex items-center gap-2"
-          >
-            <Plus className="h-5 w-5" />
-            Add Signer
-          </Button>
-          <Button 
-            onClick={submitSigners}
-            disabled={signers.some(signer => !signer.trim()) || isSubmittingSigners}
-            className="bg-white/20 hover:bg-white/30 transition-all duration-200"
-          >
-            Submit Signers
-          </Button>
-        </div>
-
-        {isSubmittingSigners && (
-          <Spinner 
-            color="success" 
-            label="Submitting signers..." 
-            labelColor="success"
-          />
-        )}
+        <Button 
+          onClick={submitSigners}
+          isDisabled={signers.some(signer => !signer.trim()) || isSubmittingSigners}
+          isLoading={isSubmittingSigners}
+          color="primary"
+          variant="shadow"
+          size="lg"
+          className="min-w-[200px]"
+        >
+          {isSubmittingSigners ? 'Submitting...' : 'Submit Signers'}
+        </Button>
         
         {submissionStatus && !isSubmittingSigners && (
-          <div className="flex items-center gap-2">
-            {signersSubmitted && (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 text-green-500"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            )}
-            <p className="text-center">{submissionStatus}</p>
-          </div>
+          <Card className={`w-full border ${signersSubmitted ? 'border-success/30 bg-success/5' : 'border-danger/30 bg-danger/5'}`}>
+            <CardBody className="flex items-center gap-2 py-3">
+              {signersSubmitted ? (
+                <CheckCircle size={18} className="text-success flex-shrink-0" />
+              ) : (
+                <AlertTriangle size={18} className="text-danger flex-shrink-0" />
+              )}
+              <p className={`text-sm ${signersSubmitted ? 'text-success' : 'text-danger'}`}>
+                {submissionStatus}
+              </p>
+            </CardBody>
+          </Card>
         )}
       </div>
     </div>

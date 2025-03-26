@@ -1,7 +1,8 @@
 'use client'
 
 import React from 'react'
-import { Button, Input, Spinner,Tooltip } from "@nextui-org/react";
+import { Button, Input, Spinner, Card, CardBody, Tooltip, Chip } from "@nextui-org/react";
+import { Upload, FileUp, CheckCircle, AlertTriangle } from 'lucide-react';
 
 interface ContractDeployStepProps {
   handlePdfInput: (event: React.ChangeEvent<HTMLInputElement>) => void;
@@ -21,116 +22,92 @@ const ContractDeployStep: React.FC<ContractDeployStepProps> = ({
   isDeploymentSuccessful
 }) => {
   return (
-    <>
-      <div className="mb-4">
-        <Input
-          type="file"
-          onChange={handlePdfInput}
-          accept=".pdf,application/pdf"
-          classNames={{
-            input: [
-              "file:bg-white/20",
-              "file:border-0",
-              "file:hover:bg-white/30",
-              "file:text-black",
-              "file:rounded-lg",
-              "file:px-4",
-              "file:py-2",
-              "file:mr-4",
-              "file:transition-all",
-              "file:duration-200",
-              "text-black",
-              "bg-transparent",
-              "rounded-lg",
-              "cursor-pointer",
-              "border-white/20"
-            ].join(" "),
-            base: "max-w-full",
-            mainWrapper: "bg-transparent",
-            innerWrapper: "bg-transparent",
-            inputWrapper: [
-              "bg-transparent",
-              "border-1",
-              "border-white/20",
-              "hover:bg-white/10",
-              "hover:border-white/30",
-              "transition-all",
-              "duration-200",
-              "!cursor-pointer"
-            ].join(" ")
-          }}
-          placeholder="Select PDF file"
-        />
-      </div>
-      <div className="flex flex-col items-center gap-4">
-        {!selectedFile ? (
-          <Tooltip
-            content="Please upload a PDF first"
-            showArrow={true}
-            placement="bottom"
-            classNames={{
-              base: [
-                "bg-white/10",
-                "backdrop-blur-sm",
-                "border-white/20",
-                "border",
-              ].join(" "),
-              content: [
-                "text-black",
-                "text-sm",
-                "py-2",
-                "px-4",
-              ].join(" "),
-              arrow: "bg-white/10"
-            }}
-          >
-            <div>
-              <Button 
-                onClick={deployContract} 
-                disabled={true}
-                className="bg-white/20 hover:bg-white/30 transition-all duration-200"
+    <div className="w-full max-w-xl">
+      <Card className="mb-6 border border-default-200">
+        <CardBody className="gap-6 p-6">
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium text-default-700">Select PDF document</label>
+            <Input
+              type="file"
+              onChange={handlePdfInput}
+              accept=".pdf,application/pdf"
+              variant="bordered"
+              color="primary"
+              startContent={<Upload size={18} />}
+              classNames={{
+                input: "file:hidden cursor-pointer",
+                inputWrapper: "py-2"
+              }}
+              placeholder="Select a PDF file"
+            />
+          </div>
+          
+          {selectedFile && (
+            <div className="flex flex-col gap-2">
+              <span className="text-sm font-medium text-default-700">Selected file:</span>
+              <Chip
+                variant="flat" 
+                color="primary"
+                startContent={<FileUp size={14} className="ml-1" />}
+                classNames={{
+                  base: "border-primary/30"
+                }}
               >
-                Deploy Contract
-              </Button>
+                {selectedFile.name}
+              </Chip>
             </div>
-          </Tooltip>
-        ) : (
+          )}
+        </CardBody>
+      </Card>
+      
+      {!selectedFile ? (
+        <Tooltip
+          content="Please upload a PDF first"
+          placement="bottom"
+          color="warning"
+        >
+          <div className="flex justify-center">
+            <Button 
+              isDisabled
+              color="primary" 
+              variant="shadow"
+              size="lg"
+            >
+              Deploy Contract
+            </Button>
+          </div>
+        </Tooltip>
+      ) : (
+        <div className="flex flex-col items-center gap-4">
           <Button 
             onClick={deployContract} 
-            disabled={isDeploying}
-            className="bg-white/20 hover:bg-white/30 transition-all duration-200"
+            isDisabled={isDeploying}
+            isLoading={isDeploying}
+            color="primary"
+            variant="shadow"
+            size="lg"
+            className="min-w-[200px]"
           >
-            Deploy Contract
+            {isDeploying ? 'Deploying...' : 'Deploy Contract'}
           </Button>
-        )}
-        {isDeploying && (
-          <Spinner 
-            color="success" 
-            label="Deploying contract..." 
-            labelColor="success"
-          />
-        )}
-        {deploymentStatus && !isDeploying && (
-          <div className="flex items-center gap-2">
-            {isDeploymentSuccessful && (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 text-green-500"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            )}
-            <p className="text-center">{deploymentStatus}</p>
-          </div>
-        )}
-      </div>
-    </>
+          
+          {deploymentStatus && !isDeploying && (
+            <Card className={`w-full border ${isDeploymentSuccessful ? 'border-success/30 bg-success/5' : 'border-danger/30 bg-danger/5'}`}>
+              <CardBody className="flex items-center gap-2 py-3">
+                {isDeploymentSuccessful ? (
+                  <CheckCircle size={18} className="text-success flex-shrink-0" />
+                ) : (
+                  <AlertTriangle size={18} className="text-danger flex-shrink-0" />
+                )}
+                <p className={`text-sm ${isDeploymentSuccessful ? 'text-success' : 'text-danger'}`}>
+                  {deploymentStatus}
+                </p>
+              </CardBody>
+            </Card>
+          )}
+        </div>
+      )}
+    </div>
   )
 }
 

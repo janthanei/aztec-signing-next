@@ -67,3 +67,6 @@ tmp/
 *.sqlite
 *.sqlite3
 *.db
+
+# contract addresses
+/backend/addresses.json
