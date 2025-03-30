@@ -85,3 +85,72 @@ The services should now be accessible at:
 ---
 
 By following these instructions, you'll have the **aztec-signing** project and its sandbox environment up and running.
+
+## :handshake: Sharing and Importing Contracts
+
+When working with private document signing contracts, you may need to share contracts with other users for signing. This section explains how to share contracts and how signers can import them.
+
+### :outbox_tray: Exporting Contract Details
+
+When you deploy a contract, the system outputs essential information that needs to be shared with signers:
+
+```bash
+Contract deployed at 0x123...abc  # Full contract address
+Contract partial address 0x456...def
+Contract init hash 0x789...ghi
+Deployment salt 0x101...1a1
+```
+
+You need to share these details, along with the contract artifact (compiled contract), with your signers.
+
+### :inbox_tray: Importing an Existing Contract
+
+For signers to interact with your contract, they need to add it to their Private Execution Environment (PXE):
+
+1. **Using the Aztec CLI:**
+   ```bash
+   aztec add-contract \
+     --contract-artifact <path-to-contract-artifact> \
+     --contract-address <contract-address> \
+     --init-hash <init-hash> \
+     --salt <salt>
+   ```
+
+2. **In a Web Application:**
+   Currently, direct contract importing via aztec.js is not available, but you can:
+   
+   - Host the contract artifact file on your frontend server
+   - Provide a UI for users to input the contract address, init hash, and salt
+   - Use the backend to execute the `add-contract` command
+
+### :test_tube: Testing with Multiple PXEs
+
+To test contract sharing locally:
+
+1. Start the sandbox without a PXE in one terminal:
+   ```bash
+   NO_PXE=true aztec start --sandbox
+   ```
+   This runs the sandbox on port `8080` without starting a PXE.
+
+2. Start a PXE in another terminal:
+   ```bash
+   aztec start --port 8081 --pxe --pxe.nodeUrl=http://localhost:8080/
+   ```
+   This runs the first PXE on port `8081`, connected to the sandbox.
+
+3. Start another PXE in a third terminal:
+   ```bash
+   aztec start --port 8082 --pxe --pxe.nodeUrl=http://localhost:8080/
+   ```
+   This runs the second PXE on port `8082`, also connected to the sandbox.
+
+4. Deploy your contract using the first PXE (port 8081), then import it to the second PXE (port 8082) using the `add-contract` command.
+
+This setup simulates different users interacting with the same contract on the same network.
+
+### :soon: Future Improvements
+
+The Aztec team is working on adding easier contract sharing capabilities via `wallet.getContractInstance()`. Once implemented, this will allow for seamless contract interaction across different users without manual importing.
+
+For the latest updates on this feature, see: [GitHub Issue #10787](https://github.com/AztecProtocol/aztec-packages/issues/10787)
